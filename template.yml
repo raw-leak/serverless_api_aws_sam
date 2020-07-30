@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: test
+
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+    AllowedValues: 
+      - dev
+      - test
+      - pro
+    Description: Run environment.
+
+Globals:
+  Function:
+    Handler: app.handler
+    Runtime: nodejs12.x
+    MemorySize: 128
+    Timeout: 100
+
+Resources:
+  MyNewHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Env
+
+  getToken:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/get-token
+      Layers:
+        - !Ref MyWebTokenLayer
+      Description: A simple example includes a HTTP post method to add one item to a DynamoDB table.
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /token
+            Method: GET
+            ApiId:
+              Ref: MyNewHttpApi
+
+  putNewUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/put-new-user
+      Description: HTTP POST method to add one user to a DynamoDB user table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserSimpleTable
+      Layers:
+        - !Ref UserBusinessLogicLayer
+      Environment:
+        Variables:
+          USER_TABLE: 
+            !Ref UserSimpleTable
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /user
+            Method: POST
+            ApiId:
+              Ref: MyNewHttpApi
+
+  getAllUsers:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/get-all-users
+      Description: HTTP GET method to get all users from a DynamoDB user table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserSimpleTable
+      Layers:
+        - !Ref UserBusinessLogicLayer
+      Environment:
+        Variables:
+          USER_TABLE: 
+            !Ref UserSimpleTable
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: MyNewHttpApi
+            Method: GET
+            Path: /user
+
+  MyWebTokenLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: dependencies/webToken
+      CompatibleRuntimes:
+        - nodejs12.x
+
+  UserBusinessLogicLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: BusinessLogicLayer/UserBusinessLogic
+      CompatibleRuntimes:
+        - nodejs12.x
+
+  UserSimpleTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: user-simple-table
+      PrimaryKey:
+        Name: id
+        Type: String
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
+Outputs:
+  WebEndpoint:
+    Description: 'API Gateway endpoint URL for Prod stage'
+    Value: !Sub 'https://${MyNewHttpApi}.execute-api.${AWS::Region}.amazonaws.com/prod/'
+
+  UserBusinessLogicLayer:
+    Value: !Ref UserBusinessLogicLayer
