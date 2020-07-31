@@ -1,59 +1,56 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: test
-
 Transform:
-  - AWS::Serverless-2016-10-31
-
+- AWS::Serverless-2016-10-31
 Parameters:
   Env:
     Type: String
     Default: dev
     AllowedValues:
-      - dev
-      - test
-      - pro
+    - dev
+    - test
+    - pro
     Description: Run environment.
-
   UserTableName:
     Type: String
     Default: user-simple-table-dev
     AllowedValues:
-      - user-simple-table-dev
-      - user-simple-table-test
-      - user-simple-table-pro
+    - user-simple-table-dev
+    - user-simple-table-test
+    - user-simple-table-pro
     Description: DynamoDB table by run environment.
-
 Globals:
   Function:
     Handler: app.handler
     Runtime: nodejs12.x
     MemorySize: 128
     Timeout: 100
-
 Resources:
   MyNewHttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: !Ref Env
-
+      StageName:
+        Ref: Env
   MyOtherNewApi:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: !Ref Env
-
+      StageName:
+        Ref: Env
   putNewUser:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/handlers/put-new-user
+      CodeUri: putNewUser
       Description: HTTP POST method to add one user to a DynamoDB user table.
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UserSimpleTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UserSimpleTable
       Layers:
-        - !Ref UserBusinessLogicLayer
+      - Ref: UserBusinessLogicLayer
       Environment:
         Variables:
-          USER_TABLE: !Ref UserSimpleTable
+          USER_TABLE:
+            Ref: UserSimpleTable
       Events:
         RestApiEvent:
           Type: Api
@@ -62,20 +59,21 @@ Resources:
             Method: post
             RestApiId:
               Ref: MyOtherNewApi
-
   getAllUsers:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/handlers/get-all-users
+      CodeUri: getAllUsers
       Description: HTTP GET method to get all users from a DynamoDB user table.
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UserSimpleTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UserSimpleTable
       Layers:
-        - !Ref UserBusinessLogicLayer
+      - Ref: UserBusinessLogicLayer
       Environment:
         Variables:
-          USER_TABLE: !Ref UserSimpleTable
+          USER_TABLE:
+            Ref: UserSimpleTable
       Events:
         HttpApi:
           Type: HttpApi
@@ -84,20 +82,21 @@ Resources:
               Ref: MyNewHttpApi
             Method: GET
             Path: /user
-
   getUserById:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/handlers/get-user-by-id
+      CodeUri: getUserById
       Description: HTTP GET method to get user by id from a DynamoDB user table.
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UserSimpleTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UserSimpleTable
       Layers:
-        - !Ref UserBusinessLogicLayer
+      - Ref: UserBusinessLogicLayer
       Environment:
         Variables:
-          USER_TABLE: !Ref UserSimpleTable
+          USER_TABLE:
+            Ref: UserSimpleTable
       Events:
         Api:
           Type: Api
@@ -106,20 +105,21 @@ Resources:
               Ref: MyOtherNewApi
             Method: GET
             Path: /user/{id}
-
   updateExistingUser:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/handlers/update-existing-user
+      CodeUri: updateExistingUser
       Description: HTTP POST method to add one user to a DynamoDB user table.
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UserSimpleTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UserSimpleTable
       Layers:
-        - !Ref UserBusinessLogicLayer
+      - Ref: UserBusinessLogicLayer
       Environment:
         Variables:
-          USER_TABLE: !Ref UserSimpleTable
+          USER_TABLE:
+            Ref: UserSimpleTable
       Events:
         RestApiEvent:
           Type: Api
@@ -128,30 +128,29 @@ Resources:
             Method: put
             RestApiId:
               Ref: MyOtherNewApi
-
   UserBusinessLogicLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      ContentUri: BusinessLogicLayer/UserBusinessLogic
+      ContentUri: ..\..\BusinessLogicLayer\UserBusinessLogic
       CompatibleRuntimes:
-        - nodejs12.x
-
+      - nodejs12.x
   UserSimpleTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
-      TableName: !Ref UserTableName
+      TableName:
+        Ref: UserTableName
       PrimaryKey:
         Name: id
         Type: String
       ProvisionedThroughput:
         ReadCapacityUnits: 2
         WriteCapacityUnits: 2
-
 Outputs:
   WebEndpoint:
-    Description: 'API Gateway endpoint URL for dev stage'
-    Value: !Sub 'https://${MyOtherNewApi}.execute-api.${AWS::Region}.amazonaws.com/dev/'
-
+    Description: API Gateway endpoint URL for dev stage
+    Value:
+      Fn::Sub: https://${MyOtherNewApi}.execute-api.${AWS::Region}.amazonaws.com/dev/
   WebHttpEndpoint:
-    Description: 'API Gateway endpoint URL for dev stage'
-    Value: !Sub 'https://${MyNewHttpApi}.execute-api.${AWS::Region}.amazonaws.com/dev/'
+    Description: API Gateway endpoint URL for dev stage
+    Value:
+      Fn::Sub: https://${MyNewHttpApi}.execute-api.${AWS::Region}.amazonaws.com/dev/

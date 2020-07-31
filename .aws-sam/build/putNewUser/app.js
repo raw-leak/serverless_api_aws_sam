@@ -6,11 +6,11 @@ exports.handler = async (event) => {
   const body = JSON.parse(event.body);
 
   try {
-    const { message } = await User.createNew({ tableName, body });
+    const createdUserBody = await User.createNew({ tableName, body });
 
     response = {
       statusCode: 201,
-      body: JSON.stringify({ message }),
+      body: JSON.stringify(createdUserBody),
       headers: {
         'Content-Type': 'application/json',
       },

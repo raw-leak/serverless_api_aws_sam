@@ -1,5 +1,5 @@
 {
   "httpMethod": "POST",
   "path": "user",
-  "body": "{\"email\": \"email@email.com\",\"name\": \"name1\",\"password\": \"123\"}"
+  "body": "{\"id\": \"1\"}"
 }

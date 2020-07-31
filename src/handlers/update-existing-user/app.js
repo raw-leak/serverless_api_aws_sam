@@ -4,13 +4,18 @@ const tableName = process.env.USER_TABLE;
 exports.handler = async (event) => {
   let response;
   const body = JSON.parse(event.body);
+  const id = event.pathParameters.id;
 
   try {
-    const { message } = await User.createNew({ tableName, body });
+    const updatedUser = await User.updateOneExistingItemById({
+      tableName,
+      id,
+      body,
+    });
 
     response = {
-      statusCode: 201,
-      body: JSON.stringify({ message }),
+      statusCode: 200,
+      body: JSON.stringify(updatedUser),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -20,6 +25,7 @@ exports.handler = async (event) => {
       statusCode: 500,
       body: JSON.stringify({
         message: err.message,
+        error: err,
       }),
       headers: {
         'Content-Type': 'application/json',

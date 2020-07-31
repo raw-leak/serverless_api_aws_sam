@@ -6,7 +6,6 @@ stack_name = "test"
 s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-y90sxt6kr2uv"
 s3_prefix = "test"
 region = "us-east-1"
-confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
-parameter_overrides = "Env=\"dev\""
+parameter_overrides = "Env=\"dev\" UserTableName=\"user-simple-table-dev\""
 

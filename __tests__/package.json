@@ -1,0 +1,19 @@
+{
+  "name": "test_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha unit/service/createNew.spec.js",
+    "debug": "mocha --inspect-brk unit/service/createNew.spec.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chai": "^4.2.0",
+    "faker": "^4.1.0",
+    "mocha": "^8.1.0",
+    "supertest": "^4.0.2"
+  }
+}
